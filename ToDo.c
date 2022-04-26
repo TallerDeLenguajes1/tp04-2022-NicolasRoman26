@@ -9,52 +9,131 @@ struct Tarea
     char *Descripcion; //
     int Duracion;      // entre 10 – 100
 };
+typedef struct Tarea tarea;
 
-int main()
+void cargarTareas(tarea **listaTareas, int cantidadTareas);
+void mostrarTareasYMover(tarea **listaTareas, tarea **tareasRealizadas, int cantidadTareas);
+void mostrarRealizadasYPorRealizar(tarea **listaTareas, tarea **tareasRealizadas, int cantidasTareas);
+
+void main()
 {
-    int cantidadTareas;
-    struct Tarea **tareasPendientes;
-    char *buff;
+    int cantidadTareas = 0;
+    tarea **listaTareas;
+    tarea **tareasRealizadas;
 
-    buff = (char *)malloc(100 * sizeof(char));
-
-    printf("Ingrese la cantidad de tareas que quiere realizar: ");
+    printf("Ingrese cuantas tareas desea cargar: ");
     scanf("%d", &cantidadTareas);
     getchar();
 
-    tareasPendientes = (struct Tarea **)malloc(cantidadTareas * sizeof(struct Tarea *));
+    /**********RESERVO MEMORIA**********/
+
+    listaTareas = (tarea **)malloc(cantidadTareas * sizeof(tarea *));
+    tareasRealizadas = (tarea **)malloc(cantidadTareas * sizeof(tarea *));
 
     for (int i = 0; i < cantidadTareas; i++)
     {
-        tareasPendientes[i] = (struct Tarea *)malloc(sizeof(struct Tarea));
+        listaTareas[i] = (tarea *)malloc(sizeof(tarea));
     }
 
-    printf("\n******CARGO LAS TAREAS******\n");
+    cargarTareas(listaTareas, cantidadTareas);
+    mostrarTareasYMover(listaTareas, tareasRealizadas, cantidadTareas);
+    mostrarRealizadasYPorRealizar(listaTareas, tareasRealizadas, cantidadTareas);
 
     for (int i = 0; i < cantidadTareas; i++)
     {
-        tareasPendientes[i]->TareaID = i + 1;
+        // free((*(listaTareas + i))->Descripcion);
+        free(listaTareas[i]);
+        // free((*(tareasRealizadas + i))->Descripcion);
+        free(tareasRealizadas[i]);
+    }
 
-        printf("Ingrese la descripcion de la tarea\n: ");
+    free(listaTareas);
+    free(tareasRealizadas);
+}
+
+void cargarTareas(tarea **listaTareas, int cantidadTareas)
+{
+    char *buff;
+    int duracion = 0;
+
+    buff = (char *)malloc(150 * sizeof(char));
+
+    printf("\n***** CARGAR TAREAS *****\n");
+
+    for (int i = 0; i < cantidadTareas; i++)
+    {
+
+        printf("\nTarea numero %d", i + 1);
+
+        (*(listaTareas + i))->TareaID = i + 1;
+        printf("\nIngrese una descripcion de la tarea a realizar: ");
+        fflush(stdin);
         gets(buff);
-        tareasPendientes[i]->Descripcion = (char *)malloc((strlen(buff) + 1) * sizeof(char));
-        strcpy(tareasPendientes[i]->Descripcion, buff);
 
-        printf("Ingrese la duracion de la tarea: \n");
-        scanf("%d", &tareasPendientes[i]->Duracion);
-        getchar();
+        (*(listaTareas + i))->Descripcion = (char *)malloc((strlen(buff) + 1) * sizeof(char));
+        strcpy((*(listaTareas + i))->Descripcion, buff);
+
+        while (duracion < 10 || duracion > 100)
+        {
+            printf("Ingrese una duracion de la tarea (entre 10 y 100): ");
+            scanf("%d", &duracion);
+            getchar();
+        }
+
+        (*(listaTareas + i))->Duracion = duracion;
+
+        duracion = 0;
     }
 
-    printf("\n******TODAS LAS TAREAS******\n");
+    free(buff);
+}
+
+void mostrarTareasYMover(tarea **listaTareas, tarea **tareasRealizadas, int cantidadTareas)
+{
+    int aux;
+
+    printf("\n***** MOSTRAR DATOS *****\n");
 
     for (int i = 0; i < cantidadTareas; i++)
     {
+        printf("\nTarea numero %d", i + 1);
+        printf("\nID: %d", (*(listaTareas + i))->TareaID);
+        printf("\nDescripcion: %s", (*(listaTareas + i))->Descripcion);
+        printf("\nDuracion: %d", (*(listaTareas + i))->Duracion);
 
-        printf("ID de la tarea: %d\n", tareasPendientes[i]->TareaID);
-        printf("Decripcion de la tarea: %s\n", tareasPendientes[i]->Descripcion);
-        printf("Duracion de la tarea: %d\n", tareasPendientes[i]->Duracion);
+        printf("\n\nSe realizo dicha tarea?(1= SI, 2= NO): ");
+        scanf("%d", &aux);
+        getchar();
+
+        if (aux == 1)
+        {
+            *(tareasRealizadas + i) = *(listaTareas + i);
+            *(listaTareas + i) = NULL;
+        }
+        else
+        {
+            *(tareasRealizadas + i) = NULL;
+        }
     }
+}
 
-    getchar();
-    return 0;
+void mostrarRealizadasYPorRealizar(tarea **listaTareas, tarea **tareasRealizadas, int cantidasTareas)
+{
+    for (int i = 0; i < cantidasTareas; i++)
+    {
+        if (*(listaTareas + i) != NULL)
+        {
+            printf("\n\n****TAREA POR REALIZAR****");
+            printf("\nID: %d", (*(listaTareas + i))->TareaID);
+            printf("\nDescripcion: %s", (*(listaTareas + i))->Descripcion);
+            printf("\nDuracion: %d", (*(listaTareas + i))->Duracion);
+        }
+        else
+        {
+            printf("\n\n****TAREA YA REALIZADA****");
+            printf("\nID: %d", (*(tareasRealizadas + i))->TareaID);
+            printf("\nDescripcion: %s", (*(tareasRealizadas + i))->Descripcion);
+            printf("\nDuracion: %d", (*(tareasRealizadas + i))->Duracion);
+        }
+    }
 }
